@@ -40,3 +40,34 @@ Install the required packages:
 ```bash
 pip install -r requirements.txt
 ```
+## Usage
+
+### Help
+
+Use the `--help` command to get a description of the different commands
+
+```bash
+python3 main.py --help # General explanation
+
+```
+
+```bash
+python3 main.py build --help # Explanation for specific commands
+
+```
+
+### Chaining
+
+It is possible to chain commands together to achieve the desired output, as seen in the following examples
+
+**Build file tree -> Save as JSON -> Print into console**
+
+```bash
+python3 main.py build '<file path>' save --output 'fileTree.json' --overwrite print-tree
+```
+
+**Load file tree -> Create template**
+
+```bash
+python3 main.py load fileTree.json template testing
+```
