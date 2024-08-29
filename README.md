@@ -48,12 +48,10 @@ Use the `--help` command to get a description of the different commands
 
 ```bash
 python3 main.py --help # General explanation
-
 ```
 
 ```bash
 python3 main.py build --help # Explanation for specific commands
-
 ```
 
 ### Chaining
