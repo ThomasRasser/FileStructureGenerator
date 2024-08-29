@@ -28,14 +28,15 @@ Clone this repository to your local machine:
 ```bash
 git clone https://github.com/ThomasRasser/FileStructureSimulator.git
 cd FileStructureSimulator
-
+```
 Set up a virtual environment:
 
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-
+```
 Install the required packages:
 
 ```bash
 pip install -r requirements.txt
+```
