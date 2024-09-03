@@ -12,11 +12,11 @@ import sys
 
 
 logging.basicConfig(
-    level=logging.DEBUG,  # Set the minimum log level to capture
-    format="%(asctime)s - %(levelname)s - %(message)s",  # Log format
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("file_tree_node.log"),  # Log to a file
-        logging.StreamHandler(),  # Also continue to log to the console
+        logging.FileHandler("file_tree_node.log"),
+        logging.StreamHandler(),
     ],
 )
 logger = logging.getLogger(__name__)
@@ -216,7 +216,7 @@ def cli(obj, traceback):
 
 
 @click.command()
-@click.argument("path", type=click.Path(exists=True, file_okay=False))
+@click.argument("source", type=click.Path(exists=True, file_okay=False))
 @click.option(
     "--add-hidden",
     is_flag=True,
@@ -224,11 +224,11 @@ def cli(obj, traceback):
     help="Include hidden files in the file tree",
 )
 @click.pass_obj
-def build(obj, path, add_hidden):
+def build(obj, source, add_hidden):
     """Builds the file tree from the specified directory"""
     try:
         ft = FileTreeNode("root", "folder")
-        ft.build_from_directory(path, add_hidden=add_hidden)
+        ft.build_from_directory(source, add_hidden=add_hidden)
         obj["ft"] = ft  # Save the FileTreeNode object in the context
         click.echo("File tree built successfully.")
     except Exception as e:
@@ -243,12 +243,12 @@ def build(obj, path, add_hidden):
 
 
 @click.command()
-@click.argument("file", type=click.Path(exists=True, dir_okay=False))
+@click.argument("input", type=click.Path(exists=True, dir_okay=False))
 @click.pass_obj
-def load(obj, file):
+def load(obj, input):
     """Loads the file tree from the specified JSON file"""
     try:
-        ft = FileTreeNode(file_path=file)
+        ft = FileTreeNode(file_path=input)
         obj["ft"] = ft  # Save the FileTreeNode object in the context
     except Exception as e:
         click.echo(f"An error occurred while loading: {e}")
@@ -263,11 +263,9 @@ def load(obj, file):
 
 
 @click.command()
-@click.option(
-    "--output",
-    type=click.Path(),
-    required=True,
-    help="File to save the tree structure",
+@click.argument(
+    "output",
+    type=click.Path(dir_okay=False, writable=True)
 )
 @click.option(
     "--overwrite",
@@ -277,7 +275,7 @@ def load(obj, file):
 )
 @click.pass_obj
 def save(obj, output, overwrite):
-    """Saves the file tree to the specified output file"""
+    """Saves the file tree to the specified output file as JSON"""
     try:
         ft = obj.get("ft")
         if ft is None:
