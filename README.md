@@ -61,7 +61,7 @@ It is possible to chain commands together to achieve the desired output, as seen
 **Build file tree -> Save as JSON -> Print into console**
 
 ```bash
-python3 main.py build '<file path>' save --output 'fileTree.json' --overwrite print-tree
+python3 main.py build '<file path>' save 'fileTree.json' --overwrite print-tree
 ```
 
 **Load file tree -> Create template**
