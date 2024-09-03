@@ -26,8 +26,8 @@ It uses JSON to serialize and deserialize file trees and provides a CLI for vari
 Clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/ThomasRasser/FileStructureSimulator.git
-cd FileStructureSimulator
+git clone https://github.com/ThomasRasser/FileStructureGenerator.git
+cd FileStructureGenerator
 ```
 Set up a virtual environment:
 
