@@ -1,10 +1,26 @@
-from typing import List, Optional
+from typing import Optional, List
 
 import os
 import json
-import argparse
 import click
+import logging
+import traceback
 import pprint
+import sys
+
+# ==================================================================================
+
+
+logging.basicConfig(
+    level=logging.DEBUG,  # Set the minimum log level to capture
+    format="%(asctime)s - %(levelname)s - %(message)s",  # Log format
+    handlers=[
+        logging.FileHandler("file_tree_node.log"),  # Log to a file
+        logging.StreamHandler(),  # Also continue to log to the console
+    ],
+)
+logger = logging.getLogger(__name__)
+
 
 # ==================================================================================
 
@@ -18,6 +34,8 @@ class FileTreeNode:
         children: Optional[List["FileTreeNode"]] = None,
         file_path: Optional[str] = None,
     ):
+
+        # If a filepath is given, try to load the root folder from it
         if file_path:
             if not os.path.exists(file_path):
                 raise ValueError(f"File '{file_path}' does not exist.")
@@ -30,6 +48,7 @@ class FileTreeNode:
             self.children = deserialized_tree.children
             return
 
+        # Otherwise, generate a new node with the given values
         self.name = name
 
         if type_str not in ["file", "folder"]:
@@ -66,7 +85,6 @@ class FileTreeNode:
 
     # ------------------------------------------------------------------------------
 
-
     def __serialize(self) -> str:
         def node_to_dict(node: FileTreeNode) -> dict:
             return {
@@ -79,9 +97,11 @@ class FileTreeNode:
                 ),
             }
 
-        return json.dumps(node_to_dict(self))
+        return json.dumps(
+            node_to_dict(self), ensure_ascii=False, indent=4, sort_keys=True
+        )
 
-    def __deserialize(self, data: str) -> "FileTreeNode":
+    def __deserialize(self, data: dict) -> "FileTreeNode":
         def dict_to_node(node_dict: dict) -> FileTreeNode:
             name = node_dict["name"]
             type_str = node_dict["type"]
@@ -92,7 +112,7 @@ class FileTreeNode:
             )
             return FileTreeNode(name, type_str, children)
 
-        return dict_to_node(json.loads(data))
+        return dict_to_node(data)
 
     # ------------------------------------------------------------------------------
 
@@ -103,13 +123,13 @@ class FileTreeNode:
             )
             return
 
-        with open(file_path, "w") as file:
-            json.dump(self.__serialize(), file)
+        with open(file_path, "w", encoding="utf-8") as file:
+            file.write(self.__serialize())
 
         print(f"File tree saved to {file_path}")
 
     def __load_from_file(self, file_path: str) -> "FileTreeNode":
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             data = json.load(file)
             return self.__deserialize(data)
 
@@ -165,8 +185,7 @@ class FileTreeNode:
 
             # Sort children: folders first, then files, each alphabetically
             sorted_children = sorted(
-                self.children,
-                key=lambda x: (x.type != "folder", x.name.lower())
+                self.children, key=lambda x: (x.type != "folder", x.name.lower())
             )
 
             # Recursively print children with updated prefix and indentation
@@ -184,11 +203,13 @@ class FileTreeNode:
 
 
 @click.group(chain=True)
+@click.option("--traceback", is_flag=True, help="Show traceback on error.")
 @click.pass_obj
-def cli(obj):
+def cli(obj, traceback):
     # Ensure that obj is a dictionary
     if not obj:
         obj.update({})
+    obj["traceback"] = traceback
 
 
 # ----------------------------------------------------------------------------------
@@ -211,7 +232,10 @@ def build(obj, path, add_hidden):
         obj["ft"] = ft  # Save the FileTreeNode object in the context
         click.echo("File tree built successfully.")
     except Exception as e:
-        click.echo(f"An error occurred: {e}")
+        click.echo(f"An error occurred while building: {e}")
+        click.echo("use the --traceback flag for more details.")
+        if obj.get("traceback"):
+            traceback.print_exc()
         raise click.Abort()
 
 
@@ -227,7 +251,11 @@ def load(obj, file):
         ft = FileTreeNode(file_path=file)
         obj["ft"] = ft  # Save the FileTreeNode object in the context
     except Exception as e:
-        print(f"An error occurred: {e}")
+        click.echo(f"An error occurred while loading: {e}")
+        click.echo("use the --traceback flag for more details.")
+
+        if obj.get("traceback"):
+            traceback.print_exc()
         raise click.Abort()
 
 
@@ -260,7 +288,10 @@ def save(obj, output, overwrite):
 
         ft.save_to_file(output, overwrite)
     except Exception as e:
-        click.echo(f"An error occurred: {e}")
+        click.echo(f"An error occurred while saving: {e}")
+        click.echo("use the --traceback flag for more details.")
+        if obj.get("traceback"):
+            traceback.print_exc()
         raise click.Abort()
 
 
@@ -278,18 +309,25 @@ def save(obj, output, overwrite):
 @click.pass_obj
 def template(obj, destination, overwrite):
     """Creates a template copy of the file tree"""
-    ft = obj.get("ft")
-    if ft is None:
+    try:
+        ft = obj.get("ft")
+        if ft is None:
+            click.echo(
+                "No file tree exists. Use `build` or `load` command before `template`."
+            )
+            raise click.Abort()
+        ft.create_template_copy(destination, overwrite)
         click.echo(
-            "No file tree exists. Use `build` or `load` command before `template`."
+            f"Template copy created at {destination}"
+            if destination
+            else "Template copy created"
         )
+    except Exception as e:
+        click.echo(f"An error occurred while creating the template: {e}")
+        click.echo("use the --traceback flag for more details.")
+        if obj.get("traceback"):
+            traceback.print_exc()
         raise click.Abort()
-    ft.create_template_copy(destination, overwrite)
-    click.echo(
-        f"Template copy created at {destination}"
-        if destination
-        else "Template copy created"
-    )
 
 
 # ----------------------------------------------------------------------------------
