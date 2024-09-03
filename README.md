@@ -1,4 +1,4 @@
-# File Structure Simulator
+# File Structure Generator
 
 **Problem:**
 Some of my scripts manipulate files or the general file structure in different kind of ways.
