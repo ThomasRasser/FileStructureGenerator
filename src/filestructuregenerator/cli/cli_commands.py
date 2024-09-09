@@ -2,7 +2,7 @@ import click
 import traceback
 import os
 
-from src.tree.file_tree_node import FileTreeNode
+from src.filestructuregenerator.tree.file_tree_node import FileTreeNode
 
 # ==================================================================================
 

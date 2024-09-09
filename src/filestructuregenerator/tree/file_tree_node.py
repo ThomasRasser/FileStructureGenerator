@@ -5,6 +5,7 @@ import json
 
 # ==================================================================================
 
+
 class FileTreeNode:
 
     def __init__(
@@ -32,7 +33,9 @@ class FileTreeNode:
         self.name = name
 
         if type_str not in ["file", "directory"]:
-            raise ValueError("Type must be 'file' or 'directory'")
+            raise ValueError(
+                f"Type must be 'file' or 'directory', but got '{type_str}' for '{name}'"
+            )
         self.type = type_str
 
         if type_str == "file" and children is not None:

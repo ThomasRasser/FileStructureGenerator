@@ -1,0 +1,20 @@
+# Temp file from some code runners
+tempCodeRunnerFile.py
+
+# Generated structures, not needed
+saved_structures/
+
+# Example structures, not needed
+template_structures/
+
+# Log file, not needed
+file_tree_node.log
+
+# Python bytecode cache
+__pycache__/
+
+# Compiled Python files
+*.pyc
+
+# Packaging metadata
+*.egg-info/
